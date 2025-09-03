@@ -9,7 +9,7 @@ const router = express.Router();
 router.post("/signup", async (req, res)=>{
     const { name, username, email, password } = req.body;
     try{
-        const exists = await pgClient.query("SELECT * FROM users WHERE email = $1 AND username = $2", [email, username]);
+        const exists = await pgClient.query("SELECT * FROM users WHERE username = $1", [username]);
         if(exists.rows.length > 0) return res.status(400).json({message: "A user with this email already exists"});
 
         const result = await pgClient.query(

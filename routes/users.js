@@ -59,6 +59,18 @@ userRoutes.get("/:username/posts", async(req,res)=>{
     }
 })
 
+//link/api/users/1
+//Save a post
+userRoutes.post("/saves", async(req, res)=>{
+    try{
+        const {post_id, user_id} = req.body;
+        const result = await pgClient.query("INSERT INTO saves (post_id, user_id) VALUES ($1, $2) RETURNING *", [post_id, user_id]);   
+        res.json({post: result.rows[0]});
+    }catch(err){
+        res.status(500).json({error: err});
+    }
+});
+
 //link/api/users/maya00/saves
 //GET (users view their saved posts)
 userRoutes.get("/:username/saves", async(req,res)=>{
