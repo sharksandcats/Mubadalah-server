@@ -18,35 +18,27 @@ adminRoutes.get("/", adminAuth, async (req, res) =>{
 
 //link/api/admin/posts/1
 //DELETE (admin deletes a post)
-adminRoutes.delete("/posts/:id", adminAuth, async (req, res)=>{
+adminRoutes.delete("/posts/:id", async (req, res)=>{
     try{
-        const result = await pgClient.query("DELETE FROM posts WHERE post_id = $1 RETURNING *", [req.params.id]);
+        await pgClient.query("DELETE FROM saves WHERE post_id = $1", [req.params.id]);
+        const result = await pgClient.query(
+         "DELETE FROM posts WHERE post_id = $1 RETURNING *",
+             [req.params.id]
+        );
+
         if(result.rows.length === 0){
             return res.status(404).json({message: "Post not found"});
         }
         res.json({message: "Post deleted", deleted:result.rows[0]});
     }catch(err){
-        res.status(500).json({error: "Internal server error"})
-    }
-});
-
-//link/api/admin/1
-//DELETE (admin deletes a user)
-adminRoutes.delete("/:id", adminAuth, async (req, res)=>{
-    try{
-        const result = await pgClient.query("DELETE FROM users WHERE user_id = $1 RETURNING *", [req.params.id]);
-        if(result.rows.length === 0){
-            return res.status(404).json({message: "User not found"});
-        }
-        res.json({message: "User deleted", deleted:result.rows[0]});
-    }catch(err){
-        res.status(500).json({error: "Internal server error"})
+        console.error(err);
+        res.status(500).json({error: err.message, stack: err.stack})
     }
 });
 
 //link/api/admin/admin
 //GET (admin views their profile)
-adminRoutes.get("/:username", adminAuth, async(req, res) => {
+adminRoutes.get("/:username", async(req, res) => {
     try{
         const result = await pgClient.query("SELECT name, email, password FROM users WHERE username = $1", [req.params.username]);
         if(result.rows.length === 0){
